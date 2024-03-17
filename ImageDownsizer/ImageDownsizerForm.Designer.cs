@@ -37,7 +37,11 @@
             ConsequentialTime = new Label();
             label2 = new Label();
             ParallelTime = new Label();
+            ParallelPB = new PictureBox();
+            label3 = new Label();
+            label4 = new Label();
             ((System.ComponentModel.ISupportInitialize)pbStartImage).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)ParallelPB).BeginInit();
             SuspendLayout();
             // 
             // OpenImage
@@ -65,7 +69,7 @@
             ImageScale.ForeColor = SystemColors.InactiveCaption;
             ImageScale.Location = new Point(150, 50);
             ImageScale.Name = "ImageScale";
-            ImageScale.Size = new Size(100, 23);
+            ImageScale.Size = new Size(75, 23);
             ImageScale.TabIndex = 2;
             ImageScale.Text = "Image Scale";
             ImageScale.Enter += ImageScale_Enter;
@@ -74,9 +78,9 @@
             // pbStartImage
             // 
             pbStartImage.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            pbStartImage.Location = new Point(256, 12);
+            pbStartImage.Location = new Point(256, 29);
             pbStartImage.Name = "pbStartImage";
-            pbStartImage.Size = new Size(532, 426);
+            pbStartImage.Size = new Size(352, 227);
             pbStartImage.SizeMode = PictureBoxSizeMode.Zoom;
             pbStartImage.TabIndex = 3;
             pbStartImage.TabStop = false;
@@ -127,11 +131,41 @@
             ParallelTime.TabIndex = 8;
             ParallelTime.Text = "N/A";
             // 
+            // ParallelPB
+            // 
+            ParallelPB.Location = new Point(256, 290);
+            ParallelPB.Name = "ParallelPB";
+            ParallelPB.Size = new Size(352, 240);
+            ParallelPB.SizeMode = PictureBoxSizeMode.Zoom;
+            ParallelPB.TabIndex = 9;
+            ParallelPB.TabStop = false;
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(395, 9);
+            label3.Name = "label3";
+            label3.Size = new Size(80, 15);
+            label3.TabIndex = 10;
+            label3.Text = "Consequental";
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new Point(416, 272);
+            label4.Name = "label4";
+            label4.Size = new Size(45, 15);
+            label4.TabIndex = 11;
+            label4.Text = "Parallel";
+            // 
             // ImageDownsizerForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(620, 542);
+            Controls.Add(label4);
+            Controls.Add(label3);
+            Controls.Add(ParallelPB);
             Controls.Add(ParallelTime);
             Controls.Add(label2);
             Controls.Add(ConsequentialTime);
@@ -145,6 +179,7 @@
             Text = "Form1";
             Load += ImageDownsizerForm_Load;
             ((System.ComponentModel.ISupportInitialize)pbStartImage).EndInit();
+            ((System.ComponentModel.ISupportInitialize)ParallelPB).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -160,5 +195,8 @@
         private Label ConsequentialTime;
         private Label label2;
         private Label ParallelTime;
+        private PictureBox ParallelPB;
+        private Label label3;
+        private Label label4;
     }
 }

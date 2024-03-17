@@ -54,6 +54,7 @@ namespace ImageDownsizer
             Bitmap MultiThreadedImage = Worker.ParallelResizing(originalImage, scaleFactor, SimpleResizer.ResizeImage);
 
             ParallelTime.Text = sw.Elapsed.ToString();
+            ParallelPB.Image = MultiThreadedImage;
 
             MessageBox.Show("You Resized the image by " + ImageScale.Text + "%");
         }

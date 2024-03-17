@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ImageDownsizer.Algorithms;
+using System;
 using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.Linq;
@@ -19,175 +20,87 @@ namespace ImageDownsizer
             int partWidth = src.Width / 2;
             int partHeight = src.Height / 2;
 
-            // Create each segment directly within the loop
-            for (int i = 0; i < divided.Length; i++)
-            {
-                int startX = (i % 2) * partWidth;
-                int startY = (i / 2) * partHeight;
-
-                divided[i] = new Bitmap(partWidth, partHeight, src.PixelFormat);
-
-                Rectangle srcRect = new Rectangle(startX, startY, partWidth, partHeight);
-                Rectangle dstRect = new Rectangle(0, 0, partWidth, partHeight);
-
-                // Lock bits for both source and destination bitmaps
-                BitmapData srcData = src.LockBits(srcRect, ImageLockMode.ReadOnly, src.PixelFormat);
-                BitmapData dstData = divided[i].LockBits(dstRect, ImageLockMode.WriteOnly, src.PixelFormat);
-
-                // Calculate stride (bytes per row) for source and destination bitmaps
-                int srcStride = srcData.Stride;
-                int dstStride = dstData.Stride;
-
-                // Create byte arrays for source and destination buffers
-                byte[] srcBuffer = new byte[srcStride * partHeight];
-                byte[] dstBuffer = new byte[dstStride * partHeight];
-
-                // Copy pixel data row by row
-                for (int y = 0; y < partHeight; y++)
-                {
-                    // Copy row from source bitmap to source buffer
-                    Marshal.Copy(IntPtr.Add(srcData.Scan0, y * srcStride), srcBuffer, 0, srcStride);
-                    // Copy row from source buffer to destination buffer
-                    Array.Copy(srcBuffer, 0, dstBuffer, y * dstStride, dstStride);
-                }
-
-                // Copy pixel data from destination buffer to destination bitmap
-                Marshal.Copy(dstBuffer, 0, IntPtr.Add(dstData.Scan0, 0), dstBuffer.Length);
-
-                // Unlock bits after processing
-                src.UnlockBits(srcData);
-                divided[i].UnlockBits(dstData);
-            }
+            divided[0] = src.Clone(new Rectangle(0, 0, partWidth, partHeight), src.PixelFormat);
+            divided[1] = src.Clone(new Rectangle(partWidth, 0, partWidth, partHeight), src.PixelFormat);
+            divided[2] = src.Clone(new Rectangle(0, partHeight, partWidth, partHeight), src.PixelFormat);
+            divided[3] = src.Clone(new Rectangle(partWidth, partHeight, partWidth, partHeight), src.PixelFormat);
 
             return divided;
         }
-        //public static Bitmap[] SplitBitmap1(Bitmap src)
-        //{
-        //    Bitmap[] divided = new Bitmap[4];
-
-        //    int partWidth = src.Width / 2;
-        //    int partHeight = src.Height / 2;
-
-        //    divided[0] = src.Clone(new Rectangle(0, 0, partWidth, partHeight), src.PixelFormat);
-        //    divided[1] = src.Clone(new Rectangle(partWidth, 0, partWidth, partHeight), src.PixelFormat);
-        //    divided[2] = src.Clone(new Rectangle(0, partHeight, partWidth, partHeight), src.PixelFormat);
-        //    divided[3] = src.Clone(new Rectangle(partWidth, partHeight, partWidth, partHeight), src.PixelFormat);
-
-        //    return divided;
-        //}
-
-        //public static Bitmap[] SplitBitmap(Bitmap src)
-        //{
-        //    int numParts = Environment.ProcessorCount;
-        //    Bitmap[] divided = new Bitmap[numParts];
-
-        //    int partWidth = src.Width / (int)Math.Ceiling(Math.Sqrt(numParts));
-        //    int partHeight = src.Height / (int)Math.Ceiling((double)numParts / Math.Ceiling(Math.Sqrt(numParts)));
-
-        //    int index = 0;
-        //    for (int y = 0; y < Math.Ceiling((double)src.Height / partHeight); y++)
-        //    {
-        //        for (int x = 0; x < Math.Ceiling((double)src.Width / partWidth); x++)
-        //        {
-        //            divided[index] = src.Clone(new Rectangle(x * partWidth, y * partHeight, partWidth, partHeight), src.PixelFormat);
-        //            index++;
-        //            if (index >= numParts)
-        //                break;
-        //        }
-        //    }
-
-        //    return divided;
-        //}
 
         public static Bitmap AssembleBitmap(Bitmap[] parts)
         {
-            if (parts == null || parts.Length == 0)
-                throw new ArgumentException("No parts provided.");
+            int partWidth = parts[0].Width;
+            int partHeight = parts[0].Height;
+            int width = partWidth * 2;
+            int height = partHeight * 2;
 
-            int partsX = (int)Math.Ceiling(Math.Sqrt(parts.Length));
-            int partsY = (int)Math.Ceiling((double)parts.Length / partsX);
+            Bitmap combinedBitmap = new Bitmap(width, height);
+            Rectangle combinedRect = new Rectangle(0, 0, width, height);
+            BitmapData combinedData = combinedBitmap.LockBits(combinedRect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+            IntPtr combinedPtr = combinedData.Scan0;
+            int combinedStride = combinedData.Stride;
+            int combinedBytes = Math.Abs(combinedStride) * height;
+            byte[] combinedRGBValues = new byte[combinedBytes];
 
-            int totalWidth = partsX * parts[0].Width;
-            int totalHeight = partsY * parts[0].Height;
+            Task[] tasks = new Task[4];
 
-            Bitmap assembledBitmap = new Bitmap(totalWidth, totalHeight, parts[0].PixelFormat);
-
-            int currentPartIndex = 0;
-
-            // Iterate through each row of parts
-            for (int row = 0; row < partsY; row++)
+            for (int i = 0; i < 4; i++)
             {
-                // Iterate through each column of parts
-                for (int col = 0; col < partsX; col++)
+                int index = i;
+                tasks[i] = Task.Run(() =>
                 {
-                    // Get the current part
-                    Bitmap currentPart = parts[currentPartIndex];
+                    Bitmap part = parts[index];
 
-                    // Copy the pixel data from the current part to the assembled bitmap
-                    CopyBitmapData(currentPart, assembledBitmap, col * currentPart.Width, row * currentPart.Height);
+                    Rectangle partRect = new Rectangle(0, 0, partWidth, partHeight);
+                    BitmapData partData = part.LockBits(partRect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+                    IntPtr partPtr = partData.Scan0;
+                    int partStride = partData.Stride;
+                    int partBytes = Math.Abs(partStride) * partHeight;
+                    byte[] partRGBValues = new byte[partBytes];
+                    Marshal.Copy(partPtr, partRGBValues, 0, partBytes);
 
-                    // Move to the next part
-                    currentPartIndex++;
-                }
+                    int destX = (index % 2) * partWidth;
+                    int destY = (index / 2) * partHeight;
+
+                    for (int y = 0; y < partHeight; y++)
+                    {
+                        int combinedOffset = (destY + y) * combinedStride + destX * 4;
+                        int partOffset = y * partStride;
+
+                        Array.Copy(partRGBValues, partOffset, combinedRGBValues, combinedOffset, partStride);
+                    }
+
+                    part.UnlockBits(partData);
+                });
             }
 
-            return assembledBitmap;
-        }
-
-        private static void CopyBitmapData(Bitmap sourceBitmap, Bitmap destinationBitmap, int destX, int destY)
-        {
-            // Lock the bits of the source and destination bitmaps
-            BitmapData sourceData = sourceBitmap.LockBits(new Rectangle(0, 0, sourceBitmap.Width, sourceBitmap.Height), ImageLockMode.ReadOnly, sourceBitmap.PixelFormat);
-            BitmapData destData = destinationBitmap.LockBits(new Rectangle(destX, destY, sourceBitmap.Width, sourceBitmap.Height), ImageLockMode.WriteOnly, destinationBitmap.PixelFormat);
-
-            try
-            {
-                // Calculate the number of bytes per row
-                int bytesPerPixel = Image.GetPixelFormatSize(sourceBitmap.PixelFormat) / 8;
-                int sourceStride = sourceData.Stride;
-                int destStride = destData.Stride;
-
-                // Allocate buffers for pixel data
-                byte[] sourceBuffer = new byte[sourceStride * sourceData.Height];
-                byte[] destBuffer = new byte[destStride * sourceData.Height];
-
-                // Copy pixel data from source bitmap to buffer
-                Marshal.Copy(sourceData.Scan0, sourceBuffer, 0, sourceBuffer.Length);
-
-                // Copy pixel data from buffer to destination bitmap
-                Marshal.Copy(sourceBuffer, 0, destData.Scan0, sourceBuffer.Length);
-            }
-            finally
-            {
-                // Unlock the bits of the source and destination bitmaps
-                sourceBitmap.UnlockBits(sourceData);
-                destinationBitmap.UnlockBits(destData);
-            }
+            Task.WaitAll(tasks);
+            Marshal.Copy(combinedRGBValues, 0, combinedPtr, combinedBytes);
+            combinedBitmap.UnlockBits(combinedData);
+            return combinedBitmap;
         }
 
         public static Bitmap ParallelResizing(Bitmap originalImage, double imageScale, Func<Bitmap, double, Bitmap> resizingMethod)
         {
             Bitmap[] bitmapParts = SplitBitmap1(originalImage);
 
-            Task<Bitmap>[] tasks = new Task<Bitmap>[4];
-
-            //for (int i = 0; i < bitmapParts.Length-1; i++)
-            //{
-            //    tasks[i] = Task.Run(() => resizingMethod(bitmapParts[i], imageScale));
-            //}
-
-            tasks[0] = Task.Run(() => resizingMethod(bitmapParts[0], imageScale));
-            tasks[1] = Task.Run(() => resizingMethod(bitmapParts[1], imageScale));
-
-            tasks[2] = Task.Run(() => resizingMethod(bitmapParts[2], imageScale));
-            tasks[3] = Task.Run(() => resizingMethod(bitmapParts[3], imageScale));
-
-
+            Task<Bitmap>[] tasks =
+            [
+                Task.Run(() => resizingMethod(bitmapParts[0], imageScale)),
+                Task.Run(() => resizingMethod(bitmapParts[1], imageScale)),
+                Task.Run(() => resizingMethod(bitmapParts[2], imageScale)),
+                Task.Run(() => resizingMethod(bitmapParts[3], imageScale)),
+            ];
             Task.WaitAll(tasks);
 
-            var assembled = AssembleBitmap(bitmapParts);
-
-            return assembled;
+            Bitmap[] resizedParts = new Bitmap[4];
+            for (int i = 0; i < 4; i++)
+            {
+                resizedParts[i] = tasks[i].Result;
+            }
+ 
+            return AssembleBitmap(resizedParts);
         }
     }
 }

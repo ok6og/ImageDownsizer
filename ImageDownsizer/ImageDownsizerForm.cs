@@ -21,6 +21,11 @@ namespace ImageDownsizer
                 string selectedFileName = openFileDialog.FileName;
                 originalImage = new Bitmap(selectedFileName);
                 pbStartImage.Image = originalImage;
+                ParallelPB.Image = originalImage;
+                NearestNeighborPB.Image = originalImage;
+                BIPB.Image = originalImage;
+
+
             }
 
         }
@@ -39,23 +44,40 @@ namespace ImageDownsizer
                 return;
             }
 
+            ConsequentialTime.Text = "N/A";
+            ParallelTime.Text = "N/A";
+            NearestNeighborLable.Text = "N/A";
+            BilinearInterpolationLabel.Text = "N/A";
+
             double scaleFactor = double.Parse(ImageScale.Text) / 100.0;
 
             Stopwatch sw = new Stopwatch();
+
+            //Sequential Downsizing
             sw.Start();
-
             Bitmap resizedImage = SimpleResizer.ResizeImage(originalImage, scaleFactor);
-
             ConsequentialTime.Text = sw.Elapsed.ToString();
             pbStartImage.Image = downsizedImage = resizedImage;
 
+            //MultiThreaded Downsizing
             sw.Restart();
-
             Bitmap MultiThreadedImage = Worker.ParallelResizing(originalImage, scaleFactor, SimpleResizer.ResizeImage);
-
             ParallelTime.Text = sw.Elapsed.ToString();
             ParallelPB.Image = MultiThreadedImage;
 
+            //NearestNeighbor DownSizing
+            sw.Restart();
+            Bitmap NearestNeighbourMultithreaded = Worker.ParallelResizing(originalImage, scaleFactor, NearestNeighborInterpolation.NearestNeighbor);
+            NearestNeighborLable.Text = sw.Elapsed.ToString();
+            NearestNeighborPB.Image = NearestNeighbourMultithreaded;
+
+            //BilinearIntepolation Downsizing
+            sw.Restart();
+            Bitmap BiInterplateMultithreaded = Worker.ParallelResizing(originalImage, scaleFactor, BilinearInterpolation.BilinearInterpolationMethod);
+            BilinearInterpolationLabel.Text = sw.Elapsed.ToString();
+            BIPB.Image = BiInterplateMultithreaded;
+
+            sw.Stop();
             MessageBox.Show("You Resized the image by " + ImageScale.Text + "%");
         }
 
@@ -91,5 +113,6 @@ namespace ImageDownsizer
                 downsizedImage.Save(saveFileDialog.FileName);
             }
         }
+
     }
 }

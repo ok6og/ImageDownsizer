@@ -10,7 +10,6 @@ namespace ImageDownsizer.Algorithms
 {
     public class SimpleResizer
     {
-
         public static Bitmap ResizeImage(Bitmap originalImage, double scaleFactor)
         {
             int newWidth = (int)Math.Round(originalImage.Width * scaleFactor);
@@ -21,7 +20,7 @@ namespace ImageDownsizer.Algorithms
             BitmapData originalData = originalImage.LockBits(new Rectangle(0, 0, originalImage.Width, originalImage.Height), ImageLockMode.ReadOnly, originalImage.PixelFormat);
             BitmapData newData = newImage.LockBits(new Rectangle(0, 0, newWidth, newHeight), ImageLockMode.WriteOnly, newImage.PixelFormat);
 
-            int bytesPerPixel = CalculateBytesPerPixel(originalImage.PixelFormat);
+            int bytesPerPixel = BytesPerPixel.CalculateBytesPerPixel(originalImage.PixelFormat);
 
             int originalStride = originalData.Stride;
             int newStride = newData.Stride;
@@ -49,20 +48,6 @@ namespace ImageDownsizer.Algorithms
             newImage.UnlockBits(newData);
 
             return newImage;
-        }
-
-        private static int CalculateBytesPerPixel(PixelFormat pixelFormat)
-        {
-            switch (pixelFormat)
-            {
-                case PixelFormat.Format24bppRgb:
-                    return 3;
-                case PixelFormat.Format32bppArgb:
-                case PixelFormat.Format32bppRgb:
-                    return 4;
-                default:
-                    throw new ArgumentException("Not supported.");
-            }
         }
     }
 }

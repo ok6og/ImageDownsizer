@@ -1,19 +1,12 @@
-﻿using ImageDownsizer.Algorithms;
-using System;
-using System.Collections.Generic;
-using System.Drawing.Imaging;
-using System.Linq;
+﻿using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 namespace ImageDownsizer
 {
     public class Worker
     {
 
-        public static Bitmap[] SplitBitmap1(Bitmap src)
+        public static Bitmap[] SplitBitmap(Bitmap src)
         {
             Bitmap[] divided = new Bitmap[4];
 
@@ -83,7 +76,7 @@ namespace ImageDownsizer
 
         public static Bitmap ParallelResizing(Bitmap originalImage, double imageScale, Func<Bitmap, double, Bitmap> resizingMethod)
         {
-            Bitmap[] bitmapParts = SplitBitmap1(originalImage);
+            Bitmap[] bitmapParts = SplitBitmap(originalImage);
 
             Task<Bitmap>[] tasks =
             [

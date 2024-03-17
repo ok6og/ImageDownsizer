@@ -30,8 +30,13 @@
         {
             OpenImage = new Button();
             Resize = new Button();
-            textBox1 = new TextBox();
+            ImageScale = new TextBox();
             pbStartImage = new PictureBox();
+            Save = new Button();
+            label1 = new Label();
+            ConsequentialTime = new Label();
+            label2 = new Label();
+            ParallelTime = new Label();
             ((System.ComponentModel.ISupportInitialize)pbStartImage).BeginInit();
             SuspendLayout();
             // 
@@ -55,35 +60,90 @@
             Resize.UseVisualStyleBackColor = true;
             Resize.Click += Resize_Click;
             // 
-            // textBox1
+            // ImageScale
             // 
-            textBox1.Location = new Point(150, 50);
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(100, 23);
-            textBox1.TabIndex = 2;
-            textBox1.TextChanged += textBox1_TextChanged;
+            ImageScale.ForeColor = SystemColors.InactiveCaption;
+            ImageScale.Location = new Point(150, 50);
+            ImageScale.Name = "ImageScale";
+            ImageScale.Size = new Size(100, 23);
+            ImageScale.TabIndex = 2;
+            ImageScale.Text = "Image Scale";
+            ImageScale.Enter += ImageScale_Enter;
+            ImageScale.Leave += ImageScale_Leave;
             // 
             // pbStartImage
             // 
+            pbStartImage.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             pbStartImage.Location = new Point(256, 12);
             pbStartImage.Name = "pbStartImage";
             pbStartImage.Size = new Size(532, 426);
             pbStartImage.SizeMode = PictureBoxSizeMode.Zoom;
             pbStartImage.TabIndex = 3;
             pbStartImage.TabStop = false;
-            pbStartImage.Click += pictureBox1_Click;
+            // 
+            // Save
+            // 
+            Save.Location = new Point(12, 50);
+            Save.Name = "Save";
+            Save.Size = new Size(82, 23);
+            Save.TabIndex = 4;
+            Save.Text = "Save";
+            Save.UseVisualStyleBackColor = true;
+            Save.Click += Save_Click;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(12, 144);
+            label1.Name = "label1";
+            label1.Size = new Size(86, 15);
+            label1.TabIndex = 5;
+            label1.Text = "Consequential:";
+            // 
+            // ConsequentialTime
+            // 
+            ConsequentialTime.AutoSize = true;
+            ConsequentialTime.Location = new Point(114, 144);
+            ConsequentialTime.Name = "ConsequentialTime";
+            ConsequentialTime.Size = new Size(29, 15);
+            ConsequentialTime.TabIndex = 6;
+            ConsequentialTime.Text = "N/A";
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(12, 198);
+            label2.Name = "label2";
+            label2.Size = new Size(48, 15);
+            label2.TabIndex = 7;
+            label2.Text = "Parallel:";
+            // 
+            // ParallelTime
+            // 
+            ParallelTime.AutoSize = true;
+            ParallelTime.Location = new Point(114, 198);
+            ParallelTime.Name = "ParallelTime";
+            ParallelTime.Size = new Size(29, 15);
+            ParallelTime.TabIndex = 8;
+            ParallelTime.Text = "N/A";
             // 
             // ImageDownsizerForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(ParallelTime);
+            Controls.Add(label2);
+            Controls.Add(ConsequentialTime);
+            Controls.Add(label1);
+            Controls.Add(Save);
             Controls.Add(pbStartImage);
-            Controls.Add(textBox1);
+            Controls.Add(ImageScale);
             Controls.Add(Resize);
             Controls.Add(OpenImage);
             Name = "ImageDownsizerForm";
             Text = "Form1";
+            Load += ImageDownsizerForm_Load;
             ((System.ComponentModel.ISupportInitialize)pbStartImage).EndInit();
             ResumeLayout(false);
             PerformLayout();
@@ -93,7 +153,12 @@
 
         private Button OpenImage;
         private Button Resize;
-        private TextBox textBox1;
+        private TextBox ImageScale;
         private PictureBox pbStartImage;
+        private Button Save;
+        private Label label1;
+        private Label ConsequentialTime;
+        private Label label2;
+        private Label ParallelTime;
     }
 }
